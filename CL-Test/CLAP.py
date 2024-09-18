@@ -20,7 +20,7 @@ from torchaudio_augmentations import (
     Reverb,
 )
 
-audio_seg_time = 60
+audio_seg_time = 10
 
 ma = "HTSAT-base"
 clap_model = laion_clap.CLAP_Module(enable_fusion = False, amodel = ma)
@@ -41,7 +41,7 @@ def transform(sr):
   audio_transform = Compose(transforms=transforms)
   return audio_transform
 
-audio_path = "./Audio/Data"
+audio_path = "./Audios/Data"
 os.chdir(audio_path)
 
 audios = []
@@ -49,6 +49,7 @@ audio_dirs = sorted(os.listdir("./"))
 
 split = 0.9
 
+"""
 count = 0
 ## --- Augmentation --- ##
 for i in tqdm(range(int(len(audio_dirs)*split))):
@@ -61,7 +62,7 @@ for i in tqdm(range(int(len(audio_dirs)*split))):
     os.mkdir(new_dir)
 
     audio, sr = torchaudio.load(audio_files[j])
-    for k in range(5):
+    for k in range(3):
       if (k != 0):
         process = transform(sr)
         transformed_audio = process(audio)
@@ -128,58 +129,37 @@ for i in tqdm(range(int(len(audio_dirs)*split), len(audio_dirs))):
     os.system("rm -r '{}'".format(new_dir))
 
   os.chdir("../")
-
 """
+
 ## --- Training Part --- ##
-count = 0
 for i in tqdm(range(int(len(audio_dirs)*split))):
-
-  os.chdir("./" + audio_dirs[i])
-  audio_dirs2 = sorted(os.listdir("./"))
-
-  for j in range(len(audio_dirs2)):
-    audio_files = sorted(os.listdir(audio_dirs2[j]))
-
-    for k in range(len(audio_files)):
-      audios.append(audio_dirs2[j] + "/" + audio_files[k])
+  audio_files = sorted(os.listdir(audio_dirs[i]))
+  for j in range(len(audio_files)):
+    audios.append(audio_dirs[i] + "/" + audio_files[j])
 
     audio_embed = clap_model.get_audio_embedding_from_filelist(x=audios, use_tensor=False)
     # audio_embed = np.reshape(np.mean(audio_embed, axis=0), (1, -1))
-    if (count == 0):
+    if (i == 0 and j == 0):
       train_audio_embeds = audio_embed
     else:
       train_audio_embeds = np.concatenate((train_audio_embeds, audio_embed), axis=0)
 
-    count += 1
     audios = []
 
-  os.chdir("../")
-
 ## --- Validating Part --- ##
-count = 0
 for i in tqdm(range(int(len(audio_dirs)*split), len(audio_dirs))):
-
-  os.chdir("./" + audio_dirs[i])
-  audio_dirs2 = sorted(os.listdir("./"))
-
-  for j in range(len(audio_dirs2)):
-    audio_files = sorted(os.listdir(audio_dirs2[j]))
-
-    for k in range(len(audio_files)):
-      audios.append(audio_dirs2[j] + "/" + audio_files[k])
+  audio_files = sorted(os.listdir(audio_dirs[i]))
+  for j in range(len(audio_files)):
+    audios.append(audio_dirs[i] + "/" + audio_files[j])
 
     audio_embed = clap_model.get_audio_embedding_from_filelist(x=audios, use_tensor=False)
     # audio_embed = np.reshape(np.mean(audio_embed, axis=0), (1, -1))
-    if (count == 0):
+    if (i == int(len(audio_dirs)*split) and j == 0):
       valid_audio_embeds = audio_embed
     else:
       valid_audio_embeds = np.concatenate((valid_audio_embeds, audio_embed), axis=0)
 
-    count += 1
     audios = []
-
-  os.chdir("../")
-"""
 
 print(train_audio_embeds.shape)
 print(valid_audio_embeds.shape)

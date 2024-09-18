@@ -3,7 +3,7 @@ from torchaudio_augmentations import *
 from pydub import AudioSegment
 from tqdm import tqdm
 
-audio_path = "./Audio"
+audio_path = "./Audios"
 os.chdir(audio_path)
 os.system("rm -r './Data'")
 
@@ -12,8 +12,8 @@ audio_files = sorted(os.listdir("./"))
 audio_data_path = "./Data"
 os.mkdir(audio_data_path)
 
-split_sec = 30
-step = 10
+split_sec = 10
+step = 7
 
 for i in tqdm(range(len(audio_files))):
 

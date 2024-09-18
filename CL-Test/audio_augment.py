@@ -17,7 +17,7 @@ from torchaudio_augmentations import (
 )
 import torchaudio
 
-audio_seg_time = 30
+audio_seg_time = 10
 
 def audio_transform(sr):
   transforms = [
@@ -35,11 +35,11 @@ def audio_transform(sr):
   return audio_transform
 
 audio_aug_path = "./Audio_aug"
-audio_path = "./Audio/Data"
+audio_path = "./Audios/Data"
 os.mkdir(audio_aug_path)
 audio_dir = sorted(os.listdir(audio_path))
 
-split = 0.8
+split = 0.9
 
 ## --- Training --- ##
 for i in tqdm(range(int(len(audio_dir)*split))):
@@ -48,7 +48,7 @@ for i in tqdm(range(int(len(audio_dir)*split))):
   count = 1
   for j in range(len(audio_files)):
     audio, sr = torchaudio.load(audio_path + "/" + audio_dir[i] + "/" + audio_files[j])
-    for k in range(5):
+    for k in range(3):
         if (k != 0):
             process = audio_transform(sr)
             transformed_audio = process(audio)

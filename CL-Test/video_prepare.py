@@ -4,13 +4,13 @@ from tqdm import tqdm
 
 os.system("rm -r './Frames'")
 os.mkdir("./Frames")
-video_files = sorted(os.listdir("./Video"))
+video_files = sorted(os.listdir("./Videos"))
 
 for i in tqdm(range(len(video_files))):
 
   num = video_files[i].split('.')[0]
   os.mkdir("./Frames_Temp")
-  video = cv2.VideoCapture("./Video/" + video_files[i])
+  video = cv2.VideoCapture("./Videos/" + video_files[i])
   fps = video.get(cv2.CAP_PROP_FPS)
 
   success, image = video.read()
@@ -33,8 +33,8 @@ for i in tqdm(range(len(video_files))):
   frames = sorted(os.listdir("./Frames_Temp"))
   low = round(len(frames)*0.2)
   high = round(len(frames)*0.8)
-  step = round(fps * 10)
-  part = round(fps * 30)
+  step = round(fps * 7)
+  part = round(fps * 10)
   count = 1
   while (low + part/2 < high and low + part < len(frames)):
     if (count < 10):

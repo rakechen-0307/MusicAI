@@ -21,6 +21,7 @@ class VideoAudioDataset(Dataset):
     self.target_transform = target_transform
 
   def __len__(self):
+    assert self.audios.shape[0] == self.images.shape[0]
     return self.audios.shape[0]
 
   def __getitem__(self, idx):
@@ -38,8 +39,8 @@ class Model(nn.Module):
     super(Model, self).__init__()
     self.fc = nn.Sequential(
         nn.LayerNorm(input_dim),
-        nn.Linear(input_dim, 1024),
-        nn.Dropout(p=0.8)
+        nn.Linear(input_dim, 512),
+        nn.Dropout(p=0.25)
     )
 
   def forward(self, x):
@@ -51,8 +52,8 @@ def trainer(train_loader, valid_loader, model, config, device):
   torch.autograd.set_detect_anomaly(True)
 
   n_epochs, best_loss, step, early_stop_cnt = config['n_epoch'], math.inf, 0, 0
-  optimizer = torch.optim.AdamW(model.fc.parameters(), lr=config['learning_rate'], weight_decay=0.01)
-  scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.2, patience=5)
+  optimizer = torch.optim.AdamW(model.fc.parameters(), lr=config['learning_rate'], weight_decay=0.001)
+  # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, patience=5)
 
   criterion = InfoNCE(temperature=0.01)
 
@@ -79,7 +80,7 @@ def trainer(train_loader, valid_loader, model, config, device):
       train_pbar.set_postfix({'loss': loss.detach().item()})
 
     mean_train_loss = sum(loss_record)/len(loss_record)
-    scheduler.step(mean_train_loss)
+    # scheduler.step(mean_train_loss)
 
     ## validating
     model.eval()
@@ -111,13 +112,13 @@ def trainer(train_loader, valid_loader, model, config, device):
 
 ## --- Read Embeddings Data --- ##
 image_train_file = './Embeddings/new_train_video.npy'
-train_video_embeds = torch.from_numpy(np.asarray(np.memmap(image_train_file, dtype='float32', mode='r+', shape=(64000, 1024))))
+train_video_embeds = torch.from_numpy(np.asarray(np.memmap(image_train_file, dtype='float32', mode='r+', shape=(256000, 768))))
 image_valid_file = './Embeddings/new_valid_video.npy'
-valid_video_embeds = torch.from_numpy(np.asarray(np.memmap(image_valid_file, dtype='float32', mode='r+', shape=(2560, 1024))))
+valid_video_embeds = torch.from_numpy(np.asarray(np.memmap(image_valid_file, dtype='float32', mode='r+', shape=(12800, 768))))
 audio_train_file = './Embeddings/new_train_audio.npy'
-train_audio_embeds = torch.from_numpy(np.asarray(np.memmap(audio_train_file, dtype='float32', mode='r+', shape=(64000, 1024))))
+train_audio_embeds = torch.from_numpy(np.asarray(np.memmap(audio_train_file, dtype='float32', mode='r+', shape=(256000, 512))))
 audio_valid_file = './Embeddings/new_valid_audio.npy'
-valid_audio_embeds = torch.from_numpy(np.asarray(np.memmap(audio_valid_file, dtype='float32', mode='r+', shape=(2560, 1024))))
+valid_audio_embeds = torch.from_numpy(np.asarray(np.memmap(audio_valid_file, dtype='float32', mode='r+', shape=(12800, 512))))
 
 ## --- Training --- ##
 train_data = VideoAudioDataset(train_video_embeds, train_audio_embeds)
@@ -127,7 +128,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 config = {
     'n_epoch': 200,
     'batch_size': 128,
-    'learning_rate': 0.0001,
+    'learning_rate': 1e-6,
     'early_stop': 50,
     'save_path': './model.ckpt'
 }
@@ -135,5 +136,5 @@ config = {
 train_dataloader = DataLoader(train_data, batch_size=config["batch_size"], shuffle=False)
 valid_dataloader = DataLoader(valid_data, batch_size=config["batch_size"], shuffle=False)
 
-train_model = Model(1024).to(device)
+train_model = Model(768).to(device)
 trainer(train_dataloader, valid_dataloader, train_model, config, device)

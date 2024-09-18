@@ -9,7 +9,7 @@ from PIL import Image
 from PIL import ImageFilter, ImageEnhance
 from tqdm import tqdm
 
-clip_model, preprocess = clip.load("RN50x16")
+clip_model, preprocess = clip.load("ViT-L/14")
 input_resolution = clip_model.visual.input_resolution
 context_length = clip_model.context_length
 vocab_size = clip_model.vocab_size
@@ -78,7 +78,7 @@ for i in tqdm(range(int(len(dirs)*split))):
   dirs2 = sorted(os.listdir(dirs[i]))
   for j in range(len(dirs2)):
     files = sorted(os.listdir(dirs[i] + "/" + dirs2[j]))
-    for k in range(5):
+    for k in range(1):
       for m in range(len(files)):
         img = Image.open(dirs[i] + "/" + dirs2[j] + "/" + files[m])
         if (k != 0):
@@ -87,17 +87,17 @@ for i in tqdm(range(int(len(dirs)*split))):
           augmented_img = img
         train_images.append(preprocess(augmented_img))
       
-      train_video_input = torch.tensor(np.stack(train_images)).cuda()
-      with torch.no_grad():
-        train_video_embed = clip_model.encode_image(train_video_input).float()
-        train_video_embed = torch.reshape(train_video_embed, (1, len(files), -1))
-        train_video_embed = torch.mean(train_video_embed, dim=1)
-        if (i == 0 and j == 0 and k == 0):
-          train_video_embeds = train_video_embed
-        else:
-          train_video_embeds = torch.cat((train_video_embeds, train_video_embed), axis=0)
+    train_video_input = torch.tensor(np.stack(train_images)).cuda()
+    with torch.no_grad():
+      train_video_embed = clip_model.encode_image(train_video_input).float()
+      train_video_embed = torch.reshape(train_video_embed, (1, len(files), -1))
+      train_video_embed = torch.mean(train_video_embed, dim=1)
+      if (i == 0 and j == 0):
+        train_video_embeds = train_video_embed
+      else:
+        train_video_embeds = torch.cat((train_video_embeds, train_video_embed), axis=0)
 
-      train_images = []
+    train_images = []
 
 ## --- Validating Part --- ##
 for i in tqdm(range(int(len(dirs)*split), len(dirs))):
@@ -113,17 +113,17 @@ for i in tqdm(range(int(len(dirs)*split), len(dirs))):
           augmented_img = img
         valid_images.append(preprocess(augmented_img))
       
-      valid_video_input = torch.tensor(np.stack(valid_images)).cuda()
-      with torch.no_grad():
-        valid_video_embed = clip_model.encode_image(valid_video_input).float()
-        valid_video_embed = torch.reshape(valid_video_embed, (1, len(files), -1))
-        valid_video_embed = torch.mean(valid_video_embed, dim=1)
-        if (i == int(len(dirs)*split) and j == 0 and k == 0):
-          valid_video_embeds = valid_video_embed
-        else:
-          valid_video_embeds = torch.cat((valid_video_embeds, valid_video_embed), 0)
+    valid_video_input = torch.tensor(np.stack(valid_images)).cuda()
+    with torch.no_grad():
+      valid_video_embed = clip_model.encode_image(valid_video_input).float()
+      valid_video_embed = torch.reshape(valid_video_embed, (1, len(files), -1))
+      valid_video_embed = torch.mean(valid_video_embed, dim=1)
+      if (i == int(len(dirs)*split) and j == 0):
+        valid_video_embeds = valid_video_embed
+      else:
+        valid_video_embeds = torch.cat((valid_video_embeds, valid_video_embed), 0)
 
-      valid_images = []
+    valid_images = []
 
 train_image = train_video_embeds.cpu().numpy()
 valid_image = valid_video_embeds.cpu().numpy()

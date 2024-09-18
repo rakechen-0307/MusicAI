@@ -5,48 +5,48 @@ import random
 import os.path as path
 from tqdm import tqdm
 
-split = 0.8
-aug_num_train = 5
+split = 0.9
+aug_num_train = 1
 aug_num_valid = 1
 
-filepath = "Frames/"
+filepath = "Audios/Data/"
 dirs = sorted(os.listdir(filepath))
 
 pos_train = [0]
 for i in range(int(split*len(dirs))):
-    pos_train.append(pos_train[-1] + aug_num_train * len(os.listdir(filepath + dirs[i])))
+    pos_train.append(pos_train[-1] + len(os.listdir(filepath + dirs[i])))
 
 pos_valid = [0]
 for i in range(int(split*len(dirs)), len(dirs)):
-    pos_valid.append(pos_valid[-1] + aug_num_valid * len(os.listdir(filepath + dirs[i])))
+    pos_valid.append(pos_valid[-1] + len(os.listdir(filepath + dirs[i])))
 
 count_train = len(pos_train) - 1
 count_valid = len(pos_valid) - 1
 
 image_train_file = './Embeddings/train_video.npy'
-train_video_embeds = torch.from_numpy(np.asarray(np.memmap(image_train_file, dtype='float32', mode='r+', shape=(45480, 1024))))
+train_video_embeds = torch.from_numpy(np.asarray(np.memmap(image_train_file, dtype='float32', mode='r+', shape=(176409, 768))))
 
 image_valid_file = './Embeddings/valid_video.npy'
-valid_video_embeds = torch.from_numpy(np.asarray(np.memmap(image_valid_file, dtype='float32', mode='r+', shape=(2178, 1024))))
+valid_video_embeds = torch.from_numpy(np.asarray(np.memmap(image_valid_file, dtype='float32', mode='r+', shape=(19950, 768))))
 
 audio_train_file = './Embeddings/train_audio.npy'
-train_audio_embeds = torch.from_numpy(np.asarray(np.memmap(audio_train_file, dtype='float32', mode='r+', shape=(45480, 1024))))
+train_audio_embeds = torch.from_numpy(np.asarray(np.memmap(audio_train_file, dtype='float32', mode='r+', shape=(176409, 512))))
 
 audio_valid_file = './Embeddings/valid_audio.npy'
-valid_audio_embeds = torch.from_numpy(np.asarray(np.memmap(audio_valid_file, dtype='float32', mode='r+', shape=(2178, 1024))))
+valid_audio_embeds = torch.from_numpy(np.asarray(np.memmap(audio_valid_file, dtype='float32', mode='r+', shape=(19950, 512))))
 
 batch_size = 128
 
 ## Training Part ##
-for i in tqdm(range(500)):
+for i in tqdm(range(2000)):
     li = []
     for k in range(count_train):
         li.append(k+1)
     for j in range(batch_size):
         id = random.randint(0, len(li)-1)
         idx = li[id]
-        video = random.randint(pos_train[idx-1], pos_train[idx]-1)
-        audio = random.randint(video - video % aug_num_train, video - video % aug_num_train + (aug_num_train - 1))
+        audio = random.randint(pos_train[idx-1], pos_train[idx]-1)
+        video = random.randint(audio - audio % aug_num_train, audio - audio % aug_num_train + (aug_num_train - 1))
         video_embed = train_video_embeds[video, :].reshape((1, -1))
         audio_embed = train_audio_embeds[audio, :].reshape((1, -1))
         if (j == 0):
@@ -68,15 +68,15 @@ print(new_train_audio_embeds.shape)
 
 
 ## Validating Part ##
-for i in tqdm(range(20)):
+for i in tqdm(range(100)):
     li = []
     for k in range(count_valid):
         li.append(k+1)
     for j in range(batch_size):
         id = random.randint(0, len(li)-1)
         idx = li[id]
-        video = random.randint(pos_valid[idx-1], pos_valid[idx]-1)
-        audio = random.randint(video - video % aug_num_valid, video - video % aug_num_valid + (aug_num_valid - 1))
+        audio = random.randint(pos_valid[idx-1], pos_valid[idx]-1)
+        video = random.randint(audio - audio % aug_num_valid, audio - audio % aug_num_valid + (aug_num_valid - 1))
         video_embed = valid_video_embeds[video, :].reshape((1, -1))
         audio_embed = valid_audio_embeds[audio, :].reshape((1, -1))
         if (j == 0):

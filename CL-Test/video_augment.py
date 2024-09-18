@@ -32,7 +32,7 @@ video_aug_path = "./Frames_aug"
 os.mkdir(video_aug_path)
 video_dir = sorted(os.listdir(video_path))
 
-split = 0.8
+split = 0.9
 
 ## --- Training --- ##
 for i in tqdm(range(int(len(video_dir)*split))):
@@ -41,7 +41,7 @@ for i in tqdm(range(int(len(video_dir)*split))):
   count = 1
   for j in range(len(video_dir2)):
     video_files = sorted(os.listdir(video_path + "/" + video_dir[i] + "/" + video_dir2[j]))
-    for k in range(5):
+    for k in range(3):
         for m in range(len(video_files)):
             img = Image.open(video_path + "/" + video_dir[i] + "/" + video_dir2[j] + "/" + video_files[m])
             if (k != 0):
