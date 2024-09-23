@@ -180,9 +180,10 @@ for i in range(1000):
         id = random.randint(0, len(li)-1)
         idx = li[id]
         audio = random.randint(pos_train[idx-1], pos_train[idx]-1)
-        video = (idx-1, random.randint(pos_train[idx-1], pos_train[idx]-1) - pos_train[idx-1])
+        video = (idx, random.randint(pos_train[idx-1], pos_train[idx]-1) - pos_train[idx-1])
         train_audio_data.append(audio)
         train_video_data.append(video)
+        del li[id]
 
 # validate part
 for i in range(25):
@@ -193,9 +194,10 @@ for i in range(25):
         id = random.randint(0, len(li)-1)
         idx = li[id]
         audio = random.randint(pos_valid[idx-1], pos_valid[idx]-1)
-        video = (idx-1+count_train, audio - pos_valid[idx-1])
+        video = (idx+count_train, audio - pos_valid[idx-1])
         valid_audio_data.append(audio)
-        valid_video_data.append(video)      
+        valid_video_data.append(video)
+        del li[id]      
 
 audio_train_file = './embeddings/train_audio.npy'
 train_audio_embeds = torch.from_numpy(np.asarray(np.memmap(audio_train_file, dtype='float32', mode='r+', shape=(total_train, 512))))
