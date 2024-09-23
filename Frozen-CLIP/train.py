@@ -172,7 +172,7 @@ train_audio_data = []
 valid_audio_data = []
 batch_size = 16
 # training part 
-for i in range(500):
+for i in range(1000):
     li = []
     for k in range(count_train):
         li.append(k+1)
@@ -185,15 +185,15 @@ for i in range(500):
         train_video_data.append(video)
 
 # validate part
-for i in range(20):
+for i in range(25):
     li = []
     for k in range(count_valid):
         li.append(k+1)
     for j in range(batch_size):
         id = random.randint(0, len(li)-1)
         idx = li[id]
-        audio = random.randint(pos_train[idx-1], pos_train[idx]-1)
-        video = (idx-1+count_train, audio - pos_train[idx-1])
+        audio = random.randint(pos_valid[idx-1], pos_valid[idx]-1)
+        video = (idx-1+count_train, audio - pos_valid[idx-1])
         valid_audio_data.append(audio)
         valid_video_data.append(video)      
 
@@ -202,7 +202,8 @@ train_audio_embeds = torch.from_numpy(np.asarray(np.memmap(audio_train_file, dty
 audio_valid_file = './embeddings/valid_audio.npy'
 valid_audio_embeds = torch.from_numpy(np.asarray(np.memmap(audio_valid_file, dtype='float32', mode='r+', shape=(total_valid, 512))))
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+# device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = 'cpu'
 config = {
     'n_epoch': 200,
     'batch_size': batch_size,
