@@ -202,8 +202,8 @@ train_audio_embeds = torch.from_numpy(np.asarray(np.memmap(audio_train_file, dty
 audio_valid_file = './embeddings/valid_audio.npy'
 valid_audio_embeds = torch.from_numpy(np.asarray(np.memmap(audio_valid_file, dtype='float32', mode='r+', shape=(total_valid, 512))))
 
-# device = 'cuda' if torch.cuda.is_available() else 'cpu'
-device = 'cpu'
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+# device = 'cpu'
 config = {
     'n_epoch': 200,
     'batch_size': batch_size,
