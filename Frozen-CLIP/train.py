@@ -171,7 +171,7 @@ train_audio_data = []
 valid_audio_data = []
 batch_size = 48
 # training part 
-for i in range(20):
+for i in range(100):
     li = []
     for k in range(count_train):
         li.append(k+1)
@@ -185,7 +185,7 @@ for i in range(20):
         del li[id]
 
 # validate part
-for i in range(5):
+for i in range(10):
     li = []
     for k in range(count_valid):
         li.append(k+1)
