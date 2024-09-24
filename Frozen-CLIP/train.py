@@ -49,9 +49,6 @@ class VideoAudioDataset(Dataset):
         video_idx = self.video_data[idx]
         audio_idx = self.audio_data[idx]
 
-        print(video_idx)
-        print(audio_idx)
-
         audio = self.audio_embed[audio_idx]
 
         dir = sorted(os.listdir(self.video_dir))[video_idx[0]]
