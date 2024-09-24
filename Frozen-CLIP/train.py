@@ -157,7 +157,7 @@ pos_train = [0]
 pos_valid = [0]
 split = 0.9
 video_dir = 'video_segs'
-dirs = os.listdir(video_dir)
+dirs = sorted(os.listdir(video_dir))
 for i in range(int(10641 * split)):
     pos_train.append(pos_train[-1] + len(os.listdir(os.path.join(video_dir, dirs[i]))))
 for i in range(int(10641 * split), 10641):
