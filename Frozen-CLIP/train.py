@@ -109,7 +109,6 @@ def trainer(train_dataloader, valid_dataloader, model, config, device):
             frames, audio = frames.to(device), audio.to(device)
 
             output = model(frames)
-            print(output.shape)
             loss = criterion(output, audio)
             loss.backward()
             optimizer.step()
@@ -170,7 +169,7 @@ train_video_data = []
 valid_video_data = []
 train_audio_data = []
 valid_audio_data = []
-batch_size = 16
+batch_size = 48
 # training part 
 for i in range(1000):
     li = []
