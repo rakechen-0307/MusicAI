@@ -49,6 +49,9 @@ class VideoAudioDataset(Dataset):
         video_idx = self.video_data[idx]
         audio_idx = self.audio_data[idx]
 
+        print(video_idx)
+        print(audio_idx)
+
         audio = self.audio_embed[audio_idx]
 
         dir = sorted(os.listdir(self.video_dir))[video_idx[0]]
@@ -180,7 +183,7 @@ for i in range(1000):
         id = random.randint(0, len(li)-1)
         idx = li[id]
         audio = random.randint(pos_train[idx-1], pos_train[idx]-1)
-        video = (idx, random.randint(pos_train[idx-1], pos_train[idx]-1) - pos_train[idx-1])
+        video = (idx-1, random.randint(pos_train[idx-1], pos_train[idx]-1) - pos_train[idx-1])
         train_audio_data.append(audio)
         train_video_data.append(video)
         del li[id]
@@ -194,7 +197,7 @@ for i in range(25):
         id = random.randint(0, len(li)-1)
         idx = li[id]
         audio = random.randint(pos_valid[idx-1], pos_valid[idx]-1)
-        video = (idx+count_train, audio - pos_valid[idx-1])
+        video = (idx-1+count_train, audio - pos_valid[idx-1])
         valid_audio_data.append(audio)
         valid_video_data.append(video)
         del li[id]      
