@@ -141,7 +141,7 @@ def collectValidData(pos_valid, count_train, count_valid, video_dir, valid_audio
     valid_video_data = []
     valid_audio_data = []
 
-    for i in range(config['update']):
+    for i in range(config['update'] // 10):
         li = []
         for k in range(count_valid):
             li.append(k+1)
@@ -194,7 +194,7 @@ def trainer(train_dataloader, valid_dataloader, model, optimizer,
             optimizer.zero_grad()
             
         # Display current epoch number and loss on tqdm progress bar.
-        train_pbar.set_description(f'Epoch [{epoch+1}/{config["n_epoch"]}]')
+        train_pbar.set_description(f'Train Epoch [{epoch+1}/{config["n_epoch"]}]')
         train_pbar.set_postfix({'loss': iter_loss.detach().item()})
 
     mean_train_loss = sum(loss_record)/len(loss_record)
@@ -203,13 +203,18 @@ def trainer(train_dataloader, valid_dataloader, model, optimizer,
     ## validate
     model.eval()
     loss_record = []
-    for frames, audio in valid_dataloader:
+
+    valid_pbar = tqdm(valid_dataloader, position=0, leave=True)
+    for i, (frames, audio) in valid_pbar:
         frames, audio = frames.to(device, non_blocking=True), audio.to(device, non_blocking=True)
         with torch.no_grad():
             output = model(frames)
             loss = criterion(output, audio)
 
         loss_record.append(loss.item())
+
+        valid_pbar.set_description(f'Valid Epoch [{epoch+1}/{config["n_epoch"]}]')
+        valid_pbar.set_postfix({'loss': loss.detach().item()})
 
     mean_valid_loss = sum(loss_record) / len(loss_record)
 
