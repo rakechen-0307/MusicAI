@@ -106,35 +106,66 @@ def collate_fn(batch):
         return None
     
 
-def collectData(pos, count, video_dir, audio_embeds, config):
-    video_data = []
-    audio_data = []
+def collectTrainData(pos_train, count_train, video_dir, train_audio_embeds, config):
+    train_video_data = []
+    train_audio_data = []
 
     for i in range(config['update']):
         li = []
-        for k in range(count):
+        for k in range(count_train):
             li.append(k+1)
         for j in range(config['batch_size']):
             id = random.randint(0, len(li)-1)
             idx = li[id]
-            audio = random.randint(pos[idx-1], pos[idx]-1)
-            video = (idx-1, random.randint(pos[idx-1], pos[idx]-1) - pos[idx-1])
-            audio_data.append(audio)
-            video_data.append(video)
+            audio = random.randint(pos_train[idx-1], pos_train[idx]-1)
+            video = (idx-1, random.randint(pos_train[idx-1], pos_train[idx]-1) - pos_train[idx-1])
+            train_audio_data.append(audio)
+            train_video_data.append(video)
             del li[id]
 
-    dataset = VideoAudioDataset(video_data=video_data, audio_data=audio_data,
-                               video_dir=video_dir, audio_embed=audio_embeds,
+    train_dataset = VideoAudioDataset(video_data=train_video_data, audio_data=train_audio_data,
+                               video_dir=video_dir, audio_embed=train_audio_embeds,
                                num_spatial_views=num_spatial_views, num_temporal_views=num_temporal_views, 
                                num_frames=num_frames, sampling_rate=sampling_rate, 
                                spatial_size=spatial_size, mean=mean, std=std)
     
-    sampler = DistributedSampler(dataset, shuffle=False)
-    dataloader = DataLoader(dataset, sampler=sampler, prefetch_factor=2,
+    sampler = DistributedSampler(train_dataset, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, sampler=sampler, prefetch_factor=2,
                             batch_size=config['batch_size'], shuffle=False,
                             pin_memory=True, num_workers=4, collate_fn=collate_fn)
     
-    return dataloader
+    return train_dataloader
+
+
+def collectValidData(pos_valid, count_train, count_valid, video_dir, valid_audio_embeds, config):
+    valid_video_data = []
+    valid_audio_data = []
+
+    for i in range(config['update']):
+        li = []
+        for k in range(count_valid):
+            li.append(k+1)
+        for j in range(config['batch_size']):
+            id = random.randint(0, len(li)-1)
+            idx = li[id]
+            audio = random.randint(pos_valid[idx-1], pos_valid[idx]-1)
+            video = (idx-1+count_train, audio - pos_valid[idx-1])
+            valid_audio_data.append(audio)
+            valid_video_data.append(video)
+            del li[id]   
+
+    valid_dataset = VideoAudioDataset(video_data=valid_video_data, audio_data=valid_audio_data,
+                               video_dir=video_dir, audio_embed=valid_audio_embeds,
+                               num_spatial_views=num_spatial_views, num_temporal_views=num_temporal_views, 
+                               num_frames=num_frames, sampling_rate=sampling_rate, 
+                               spatial_size=spatial_size, mean=mean, std=std)
+    
+    sampler = DistributedSampler(valid_dataset, shuffle=False)
+    valid_dataloader = DataLoader(valid_dataset, sampler=sampler, prefetch_factor=2,
+                            batch_size=config['batch_size'], shuffle=False,
+                            pin_memory=True, num_workers=4, collate_fn=collate_fn)
+    
+    return valid_dataloader
 
 
 def trainer(train_dataloader, valid_dataloader, model, optimizer, 
@@ -251,10 +282,12 @@ def main():
 
     for epoch in range(n_epochs):
         
-        train_dataloader = collectData(pos=pos_train, count=count_train, video_dir=video_dir, 
-                                       audio_embeds=train_audio_embeds, config=config)
-        valid_dataloader = collectData(pos=pos_valid, count=count_valid, video_dir=video_dir, 
-                                       audio_embeds=valid_audio_embeds, config=config)
+        train_dataloader = collectTrainData(pos_train=pos_train, count_train=count_train,
+                                            video_dir=video_dir, train_audio_embeds=train_audio_embeds,
+                                            config=config)
+        valid_dataloader = collectValidData(pos_valid=pos_valid, count_train=count_train, count_valid=count_valid,
+                                            video_dir=video_dir, valid_audio_embeds=valid_audio_embeds, 
+                                            config=config)
 
         # train for one epoch
         mean_valid_loss = trainer(train_dataloader, valid_dataloader, model, optimizer, 
