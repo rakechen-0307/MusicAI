@@ -64,8 +64,9 @@ class VideoAudioDataset(Dataset):
         container.close()
         frames = [frames[k] for k in sorted(frames.keys())]
         frame_idx = []
-        for i in range(self.num_frames):
-            frame_idx.append(i * self.sampling_rate if i * self.sampling_rate < len(frames) else frame_idx[-1])
+        if (len(frames) != 0):
+            for i in range(self.num_frames):
+                frame_idx.append(i * self.sampling_rate if i * self.sampling_rate < len(frames) else frame_idx[-1])
 
         cropped_frames = []
         for x in frame_idx:
@@ -83,12 +84,28 @@ class VideoAudioDataset(Dataset):
             cropped_frames.append(cropped_frame)
 
         frames = cropped_frames
-        frames = torch.as_tensor(np.stack(frames)).float() / 255.
-        frames = (frames - self.mean) / self.std
-        frames = frames.permute(3, 0, 1, 2) # C, T, H, W
+        if (len(frames) != 0):
+            frames = torch.as_tensor(np.stack(frames)).float() / 255.
+            frames = (frames - self.mean) / self.std
+            frames = frames.permute(3, 0, 1, 2) # C, T, H, W
+        else:
+            frames = torch.as_tensor(np.array(frames))
 
         return frames, audio
 
+
+def collate_fn(batch):
+    # Filter out samples where `frames` is an empty tensor
+    print(batch)
+    batch = [sample for sample in batch if sample[0].nelement() > 0]
+
+    # If batch is not empty after filtering
+    if len(batch) > 0:
+        return torch.utils.data.dataloader.default_collate(batch)
+    else:
+        # Return None or handle empty batch case
+        return None
+    
 
 def collectData(pos, count, video_dir, audio_embeds, config):
     video_data = []
@@ -116,7 +133,7 @@ def collectData(pos, count, video_dir, audio_embeds, config):
     sampler = DistributedSampler(dataset, shuffle=False)
     dataloader = DataLoader(dataset, sampler=sampler, prefetch_factor=2,
                             batch_size=config['batch_size'], shuffle=False,
-                            pin_memory=True, num_workers=4)
+                            pin_memory=True, num_workers=4, collate_fn=collate_fn)
     
     return dataloader
 
@@ -168,7 +185,8 @@ def trainer(train_dataloader, valid_dataloader, model, optimizer,
 
     print(f'Epoch [{epoch+1}/{config["n_epoch"]}]: Train loss: {mean_train_loss:.4f}, Valid loss: {mean_valid_loss:.4f}')
     return mean_valid_loss
-        
+
+
 def main():
 
     # distributed training
