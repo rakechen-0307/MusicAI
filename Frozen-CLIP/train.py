@@ -205,7 +205,7 @@ def trainer(train_dataloader, valid_dataloader, model, optimizer,
     loss_record = []
 
     valid_pbar = tqdm(valid_dataloader, position=0, leave=True)
-    for i, (frames, audio) in valid_pbar:
+    for i, (frames, audio) in enumerate(valid_pbar):
         frames, audio = frames.to(device), audio.to(device)
         with torch.no_grad():
             output = model(frames)
