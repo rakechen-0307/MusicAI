@@ -184,8 +184,8 @@ def trainer(train_dataloader, valid_dataloader, model, optimizer,
 
         output = model(frames)
         loss = criterion(output, audio)
-        iter_loss = loss
-        loss_record.append(iter_loss.item())
+        iter_loss = loss.item()
+        loss_record.append(iter_loss)
         loss = loss / config['accumulated_step']
         loss.backward()
 
@@ -195,7 +195,7 @@ def trainer(train_dataloader, valid_dataloader, model, optimizer,
             
         # Display current epoch number and loss on tqdm progress bar.
         train_pbar.set_description(f'Train Epoch [{epoch+1}/{config["n_epoch"]}]')
-        train_pbar.set_postfix({'loss': iter_loss.detach().item()})
+        train_pbar.set_postfix({'loss': iter_loss})
 
     mean_train_loss = sum(loss_record)/len(loss_record)
     scheduler.step(mean_train_loss)
@@ -218,7 +218,15 @@ def trainer(train_dataloader, valid_dataloader, model, optimizer,
 
     mean_valid_loss = sum(loss_record) / len(loss_record)
 
+    mean_valid_loss_tensor = torch.tensor(mean_valid_loss).to(device)
+    dist.all_reduce(mean_valid_loss_tensor, op=dist.ReduceOp.SUM)
+    mean_valid_loss = mean_valid_loss_tensor.item() / dist.get_world_size()
+
     print(f'Epoch [{epoch+1}/{config["n_epoch"]}]: Train loss: {mean_train_loss:.4f}, Valid loss: {mean_valid_loss:.4f}')
+
+    # Free up memory (especially useful when training on GPU)
+    torch.cuda.empty_cache()
+
     return mean_valid_loss
 
 
