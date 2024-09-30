@@ -204,7 +204,7 @@ def trainer(train_dataloader, valid_dataloader, model, optimizer,
     model.eval()
     loss_record = []
     for frames, audio in valid_dataloader:
-        frames, audio = frames.to(device), audio.to(device)
+        frames, audio = frames.to(device, non_blocking=True), audio.to(device, non_blocking=True)
         with torch.no_grad():
             output = model(frames)
             loss = criterion(output, audio)
