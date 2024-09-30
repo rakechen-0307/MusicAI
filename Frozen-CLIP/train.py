@@ -129,22 +129,26 @@ def trainer(train_dataloader, valid_dataloader, model, optimizer,
     loss_record = []
 
     train_pbar = tqdm(train_dataloader, position=0, leave=True)
+    optimizer.zero_grad()
 
-    for frames, audio in train_pbar:
+    for i, (frames, audio) in enumerate(train_pbar):
 
-        optimizer.zero_grad()
         frames, audio = frames.to(device, non_blocking=True), audio.to(device, non_blocking=True)
 
         output = model(frames)
         loss = criterion(output, audio)
+        iter_loss = loss
+        loss_record.append(iter_loss.item())
+        loss = loss / config['accumulated_step']
         loss.backward()
-        optimizer.step()
-        step += 1
-        loss_record.append(loss.item())
+
+        if ((i + 1) % config['accumulated_step'] == 0):
+            optimizer.step()
+            optimizer.zero_grad()
             
         # Display current epoch number and loss on tqdm progress bar.
         train_pbar.set_description(f'Epoch [{epoch+1}/{config["n_epoch"]}]')
-        train_pbar.set_postfix({'loss': loss.detach().item()})
+        train_pbar.set_postfix({'loss': iter_loss.detach().item()})
 
     mean_train_loss = sum(loss_record)/len(loss_record)
     scheduler.step(mean_train_loss)
@@ -198,13 +202,13 @@ def main():
         device = torch.device("cuda", local_rank)
     else:
         device = torch.device("cpu")
-    print(f'========== device:{device} ==========')
 
     config = {
         'n_epoch': 100,
-        'update': 25,
-        'batch_size': 192,
-        'learning_rate': 5e-4,
+        'update': 60,
+        'batch_size': 48,
+        'accumulated_step': 3,
+        'learning_rate': 1e-3,
         'save_path': './model.pt'
     }
 
