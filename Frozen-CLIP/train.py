@@ -143,7 +143,7 @@ def trainer(train_dataloader, valid_dataloader, model, optimizer,
         loss_record.append(loss.item())
             
         # Display current epoch number and loss on tqdm progress bar.
-        train_pbar.set_description(f'Epoch [{epoch+1}/{config['n_epoch']}]')
+        train_pbar.set_description(f'Epoch [{epoch+1}/{config["n_epoch"]}]')
         train_pbar.set_postfix({'loss': loss.detach().item()})
 
     mean_train_loss = sum(loss_record)/len(loss_record)
@@ -162,7 +162,7 @@ def trainer(train_dataloader, valid_dataloader, model, optimizer,
 
     mean_valid_loss = sum(loss_record) / len(loss_record)
 
-    print(f'Epoch [{epoch+1}/{config['n_epoch']}]: Train loss: {mean_train_loss:.4f}, Valid loss: {mean_valid_loss:.4f}')
+    print(f'Epoch [{epoch+1}/{config["n_epoch"]}]: Train loss: {mean_train_loss:.4f}, Valid loss: {mean_valid_loss:.4f}')
     return mean_valid_loss
         
 def main():
@@ -241,3 +241,6 @@ def main():
             best_loss = mean_valid_loss
             torch.save(model.state_dict(), config['save_path']) # Save your best model
             print('Saving model with loss {:.3f}...'.format(best_loss))
+
+if __name__ == '__main__':
+    main()
