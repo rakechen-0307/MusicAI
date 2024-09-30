@@ -132,7 +132,7 @@ def collectTrainData(pos_train, count_train, video_dir, train_audio_embeds, conf
     sampler = DistributedSampler(train_dataset, shuffle=False)
     train_dataloader = DataLoader(train_dataset, sampler=sampler, prefetch_factor=2,
                             batch_size=config['batch_size'], shuffle=False,
-                            pin_memory=True, num_workers=4, collate_fn=collate_fn)
+                            pin_memory=False, num_workers=4, collate_fn=collate_fn)
     
     return train_dataloader
 
@@ -163,7 +163,7 @@ def collectValidData(pos_valid, count_train, count_valid, video_dir, valid_audio
     sampler = DistributedSampler(valid_dataset, shuffle=False)
     valid_dataloader = DataLoader(valid_dataset, sampler=sampler, prefetch_factor=2,
                             batch_size=config['batch_size'], shuffle=False,
-                            pin_memory=True, num_workers=4, collate_fn=collate_fn)
+                            pin_memory=False, num_workers=4, collate_fn=collate_fn)
     
     return valid_dataloader
 
@@ -180,7 +180,7 @@ def trainer(train_dataloader, valid_dataloader, model, optimizer,
 
     for i, (frames, audio) in enumerate(train_pbar):
 
-        frames, audio = frames.to(device, non_blocking=True), audio.to(device, non_blocking=True)
+        frames, audio = frames.to(device), audio.to(device)
 
         output = model(frames)
         loss = criterion(output, audio)
@@ -206,7 +206,7 @@ def trainer(train_dataloader, valid_dataloader, model, optimizer,
 
     valid_pbar = tqdm(valid_dataloader, position=0, leave=True)
     for i, (frames, audio) in valid_pbar:
-        frames, audio = frames.to(device, non_blocking=True), audio.to(device, non_blocking=True)
+        frames, audio = frames.to(device), audio.to(device)
         with torch.no_grad():
             output = model(frames)
             loss = criterion(output, audio)
