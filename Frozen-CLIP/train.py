@@ -113,7 +113,7 @@ def collectData(pos, count, video_dir, audio_embeds, config):
                                num_frames=num_frames, sampling_rate=sampling_rate, 
                                spatial_size=spatial_size, mean=mean, std=std)
     
-    sampler = DistributedSampler(dataset)
+    sampler = DistributedSampler(dataset, shuffle=False)
     dataloader = DataLoader(dataset, sampler=sampler, prefetch_factor=2,
                             batch_size=config['batch_size'], shuffle=False,
                             pin_memory=True, num_workers=4)
@@ -170,8 +170,9 @@ def main():
     # distributed training
     dist.init_process_group(backend='nccl')
     dist.barrier()
-    local_rank = 0
     world_size = dist.get_world_size()
+    local_rank = torch.distributed.get_rank()
+    torch.cuda.set_device(local_rank)
 
     pos_train = [0]
     pos_valid = [0]
@@ -197,6 +198,7 @@ def main():
         device = torch.device("cuda", local_rank)
     else:
         device = torch.device("cpu")
+    print(f'========== device:{device} ==========')
 
     config = {
         'n_epoch': 100,
