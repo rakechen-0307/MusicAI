@@ -96,7 +96,6 @@ class VideoAudioDataset(Dataset):
 
 def collate_fn(batch):
     # Filter out samples where `frames` is an empty tensor
-    print(batch)
     batch = [sample for sample in batch if sample[0].nelement() > 0]
 
     # If batch is not empty after filtering
