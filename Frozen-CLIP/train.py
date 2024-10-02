@@ -266,7 +266,7 @@ def main():
 
     config = {
         'n_epoch': 200,
-        'update': 80,
+        'update': 24,
         'batch_size': 48,
         'accumulated_step': 1,
         'learning_rate': 1e-3,
