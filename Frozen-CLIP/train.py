@@ -265,8 +265,8 @@ def main():
         device = torch.device("cpu")
 
     config = {
-        'n_epoch': 100,
-        'update': 20,
+        'n_epoch': 200,
+        'update': 80,
         'batch_size': 48,
         'accumulated_step': 1,
         'learning_rate': 1e-3,
@@ -291,7 +291,7 @@ def main():
     n_epochs, best_loss = config['n_epoch'], math.inf
     optimizer = torch.optim.AdamW(model.parameters(), lr=config['learning_rate'], weight_decay=0.001)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, patience=5)
-    criterion = InfoNCE(temperature=0.01)
+    criterion = InfoNCE(temperature=0.1)
 
     for epoch in range(n_epochs):
         

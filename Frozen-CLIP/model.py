@@ -184,12 +184,18 @@ class EVLTransformer(nn.Module):
             mlp_dropout=decoder_mlp_dropout,
         )
         self.proj = nn.Sequential(
+            # FC 1
             nn.LayerNorm(backbone_feature_dim),
             nn.Dropout(cls_dropout),
             nn.Linear(backbone_feature_dim, backbone_feature_dim),
+            # FC 2
             nn.LayerNorm(backbone_feature_dim),
             nn.Dropout(cls_dropout),
-            nn.Linear(backbone_feature_dim, num_classes)
+            nn.Linear(backbone_feature_dim, num_classes),
+            # FC 3
+            nn.LayerNorm(num_classes),
+            nn.Dropout(cls_dropout),
+            nn.Linear(num_classes, num_classes)
         )
 
 
