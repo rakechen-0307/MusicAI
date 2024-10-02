@@ -266,9 +266,9 @@ def main():
 
     config = {
         'n_epoch': 100,
-        'update': 60,
+        'update': 20,
         'batch_size': 48,
-        'accumulated_step': 3,
+        'accumulated_step': 1,
         'learning_rate': 1e-3,
         'save_path': './model.pt'
     }
@@ -289,7 +289,7 @@ def main():
     model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[local_rank], output_device=local_rank)
 
     n_epochs, best_loss = config['n_epoch'], math.inf
-    optimizer = torch.optim.AdamW(model.parameters(), lr=config['learning_rate'], weight_decay=0.01)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=config['learning_rate'], weight_decay=0.001)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, patience=5)
     criterion = InfoNCE(temperature=0.01)
 

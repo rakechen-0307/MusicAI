@@ -186,7 +186,10 @@ class EVLTransformer(nn.Module):
         self.proj = nn.Sequential(
             nn.LayerNorm(backbone_feature_dim),
             nn.Dropout(cls_dropout),
-            nn.Linear(backbone_feature_dim, num_classes),
+            nn.Linear(backbone_feature_dim, backbone_feature_dim),
+            nn.LayerNorm(backbone_feature_dim),
+            nn.Dropout(cls_dropout),
+            nn.Linear(backbone_feature_dim, num_classes)
         )
 
 
