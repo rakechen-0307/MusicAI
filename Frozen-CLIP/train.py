@@ -18,8 +18,8 @@ from model import EVLTransformer
 mean = torch.Tensor([0.48145466, 0.4578275, 0.40821073])
 std = torch.Tensor([0.26862954, 0.26130258, 0.27577711])
 spatial_size = 224
-num_frames = 8
-sampling_rate = 32
+num_frames = 16
+sampling_rate = 16
 num_temporal_views = 1
 num_spatial_views = 1
 decoder_num_layers = 4
@@ -268,7 +268,7 @@ def main():
     config = {
         'n_epoch': 200,
         'update': 24,
-        'batch_size': 48,
+        'batch_size': 24,
         'accumulated_step': 1,
         'learning_rate': 1e-3,
         'save_path': './model.pt'
