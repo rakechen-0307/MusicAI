@@ -118,7 +118,8 @@ def collectTrainData(pos_train, count_train, video_dir, train_audio_embeds, conf
             id = random.randint(0, len(li)-1)
             idx = li[id]
             audio = random.randint(pos_train[idx-1], pos_train[idx]-1)
-            video = (idx-1, random.randint(pos_train[idx-1], pos_train[idx]-1) - pos_train[idx-1])
+            # video = (idx-1, random.randint(pos_train[idx-1], pos_train[idx]-1) - pos_train[idx-1])
+            video = (idx-1, audio - pos_train[idx-1])
             train_audio_data.append(audio)
             train_video_data.append(video)
             del li[id]
