@@ -42,6 +42,6 @@ latents = audioVAE.encode_audio(audio.to(device), chunked=False)
 
 audio = audioVAE.decode_audio(latents.to(device), chunked=False)
 audio = rearrange(audio.to(device), "b d n -> d (b n)")
-audio = audio.to(torch.float32).clamp(-1, 1).mul(32767).to(torch.int16).cpu()
+audio = audio.to(torch.float32).clamp(-1, 1).cpu()
 print(audio)
 torchaudio.save("output.wav", audio, model_config["sample_rate"])
