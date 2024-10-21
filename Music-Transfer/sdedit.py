@@ -7,7 +7,7 @@ from vae import DACEncoderWrapper, DACDecoderWrapper, VAEBottleneck, AudioAutoen
 
 encoder_config = {
     "in_channels": 2,
-    "latent_dim": 64,  # Changed from 128 to 64
+    "latent_dim": 128,
     "d_model": 128,
     "strides": [4, 4, 8, 8]
 }
@@ -29,7 +29,7 @@ if torch.cuda.is_available():
     torch.cuda.empty_cache()
 gc.collect()
 
-audio_file = "./test/mix.mp3"
+audio_file = "./test/mix10s.mp3"
 encoder = DACEncoderWrapper(**encoder_config).to(device)
 decoder = DACDecoderWrapper(**decoder_config).to(device)
 bottleneck = VAEBottleneck().to(device)
