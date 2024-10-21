@@ -23,6 +23,8 @@ model_config = {
     "io_channels": 2
 }
 
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 audio_file = "./test/orig1.mp3"
 enocder = DACEncoderWrapper(**encoder_config)
 decoder = DACDecoderWrapper(**decoder_config)
@@ -32,6 +34,7 @@ audioVAE = AudioAutoencoder(encoder=enocder, decoder=decoder, latent_dim=model_c
                             io_channels=model_config["io_channels"], bottleneck=bottleneck)
 
 audio, sr = torchaudio.load(audio_file, format='mp3')
+audio = audio.to(device)
 audio = audioVAE.preprocess_audio_for_encoder(audio, sr)
 latents = audioVAE.encode_audio(audio, chunked=False)
 
