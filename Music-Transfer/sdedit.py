@@ -28,7 +28,7 @@ if torch.cuda.is_available():
     torch.cuda.empty_cache()
 gc.collect()
 
-audio_file = "./test/mix.mp3"
+audio_file = "./test/mix47s.mp3"
 enocder = DACEncoderWrapper(**encoder_config).to(device)
 decoder = DACDecoderWrapper(**decoder_config).to(device)
 bottleneck = VAEBottleneck().to(device)
