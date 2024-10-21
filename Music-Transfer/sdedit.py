@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 import torchaudio
 from einops import rearrange
@@ -34,12 +33,11 @@ audioVAE = AudioAutoencoder(encoder=enocder, decoder=decoder, latent_dim=model_c
                             io_channels=model_config["io_channels"], bottleneck=bottleneck).to(device)
 
 audio, sr = torchaudio.load(audio_file, format='mp3')
-audio.to(device)
-audio = audioVAE.preprocess_audio_for_encoder(audio, sr)
-latents = audioVAE.encode_audio(audio, chunked=False)
+audio = audioVAE.preprocess_audio_for_encoder(audio.to(device), sr)
+latents = audioVAE.encode_audio(audio.to(device), chunked=False)
 
-audio = audioVAE.decode_audio(latents, chunked=False)
-audio = rearrange(audio, "b d n -> d (b n)")
+audio = audioVAE.decode_audio(latents.to(device), chunked=False)
+audio = rearrange(audio.to(device), "b d n -> d (b n)")
 audio = audio.to(torch.float32).clamp(-1, 1).cpu()
 print(audio)
 torchaudio.save("output.wav", audio, model_config["sample_rate"])
