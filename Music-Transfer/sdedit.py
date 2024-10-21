@@ -24,7 +24,7 @@ model_config = {
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-audio_file = "./test/orig1.mp3"
+audio_file = "./test/mix.mp3"
 enocder = DACEncoderWrapper(**encoder_config).to(device)
 decoder = DACDecoderWrapper(**decoder_config).to(device)
 bottleneck = VAEBottleneck().to(device)
