@@ -3,6 +3,7 @@ import torch
 import torchaudio
 import numpy as np
 from scipy.io import wavfile
+from stable_audio_tools import get_pretrained_model
 from vae import DACEncoderWrapper, DACDecoderWrapper, VAEBottleneck, AudioAutoencoder
 
 encoder_config = {
@@ -24,6 +25,11 @@ model_config = {
     "io_channels": 2
 }
 
+model, model_config = get_pretrained_model("stabilityai/stable-audio-open-1.0")
+print(model)
+print(model_config)
+
+"""
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 if torch.cuda.is_available():
     torch.cuda.empty_cache()
@@ -58,3 +64,4 @@ reconstructed_audio = reconstructed_audio.squeeze().cpu().detach().numpy()
 reconstructed_audio = np.clip(reconstructed_audio, -1, 1)
 # reconstructed_audio = (reconstructed_audio * 32767).astype(np.int16)
 wavfile.write("output.wav", model_config["sample_rate"], reconstructed_audio.T)
+"""
