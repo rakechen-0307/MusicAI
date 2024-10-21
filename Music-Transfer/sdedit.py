@@ -1,3 +1,4 @@
+import gc
 import torch
 import torchaudio
 from einops import rearrange
@@ -23,6 +24,9 @@ model_config = {
 }
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
+if torch.cuda.is_available():
+    torch.cuda.empty_cache()
+gc.collect()
 
 audio_file = "./test/mix.mp3"
 enocder = DACEncoderWrapper(**encoder_config).to(device)
